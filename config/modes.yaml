@@ -1,10 +1,9 @@
-# Motion mode profiles — consumed by the host planner (ADR-0004).
-# Units: mm, s, g (1 g ≈ 9810 mm/s²).
+# Speed / Precise profiles for the host planner.
 
 modes:
   speed:
     id: 0
-    description: "Tracking / catching — high accel, blend-through, prediction-first"
+    description: "catch / track"
     max_vel_mm_s: 1500.0
     max_accel_g: 3.0
     max_jerk_mm_s3: 2.0e8
@@ -17,7 +16,7 @@ modes:
 
   precise:
     id: 1
-    description: "Placement — low accel, S-curve, settle before release"
+    description: "place / settle"
     max_vel_mm_s: 400.0
     max_accel_g: 0.8
     max_jerk_mm_s3: 2.0e7
@@ -28,4 +27,4 @@ modes:
       predict_horizon_ms: 0
       confirm_before_place: true
 
-default_mode: "precise"   # commission in Precise; switch to Speed after bring-up ladder
+default_mode: "precise"

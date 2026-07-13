@@ -108,24 +108,15 @@ export function gaugePos(band, value) {
 }
 
 export const TIPS = {
-  voltageV:
-    "Driver DC bus voltage. Higher V forces current into the winding inductance faster, so torque holds up better at speed. This project targets 48 V.",
-  ratedCurrentA:
-    "Maximum phase current the motor (and driver) are rated for. Torque ≈ Kt · I until thermal / magnetic limits.",
-  resistanceOhm:
-    "Phase resistance R. Sets I²R heating and the DC current V/R ceiling. Lower R usually pairs with higher current motors.",
-  inductancemH:
-    "Phase inductance L. The #1 enemy of high-speed torque: current rise time ~ L/R. Low-L (<~2 mH) is what the BOM asks for.",
-  holdTorqueNm:
-    "Standstill torque at rated current. Do NOT size high-speed moves from this — use the torque–speed curve at your operating rev/s.",
-  inertiaGcm2:
-    "Rotor inertia. Lower inertia = faster angular accel for the same torque. Important for the delta’s reflected load.",
-  bodyLenMm:
-    "NEMA 17 face is ~42.3 mm; body length trades torque vs inertia. ~48 mm is the project compromise.",
-  microsteps:
-    "Driver microstep setting. Smoother motion, higher step-pulse rate. Does not magically create more real resolution under load.",
-  speedRps:
-    "Mechanical shaft speed in revolutions per second. Marker on the torque curve is this operating point.",
+  voltageV: "Driver bus voltage. Higher V = better torque at speed. We want ~48 V.",
+  ratedCurrentA: "Max phase current. Torque ≈ Kt · I.",
+  resistanceOhm: "Phase R. Sets heating and DC current limit V/R.",
+  inductancemH: "Phase L. Big L kills high-speed torque. Want ≤~2 mH.",
+  holdTorqueNm: "Standstill torque. Don’t size fast moves from this alone.",
+  inertiaGcm2: "Rotor inertia. Lower = snappier accel.",
+  bodyLenMm: "NEMA17 face ~42 mm; length trades torque vs inertia. ~48 mm is fine.",
+  microsteps: "Driver µstep setting. Smoother motion, higher pulse rate.",
+  speedRps: "Shaft speed for the operating-point marker on the curve.",
 };
 
 export const PRESETS = {

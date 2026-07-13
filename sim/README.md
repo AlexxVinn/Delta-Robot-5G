@@ -1,12 +1,6 @@
-# Simulators
+# Sims
 
-Open the HTML files in a browser (no build).
+Open in a browser:
 
-| Simulator | File |
-|---|---|
-| Delta kinematics (3D) | [`kinematics/index.html`](kinematics/index.html) |
-| NEMA 17 motor | [`nema17/index.html`](nema17/index.html) |
-
-**Delta:** orbit drag, scroll zoom, drag orange TCP handle, waypoints / demo path / play.
-
-**Motor:** `?` tooltips, low–OK–high gauges, torque–speed curve vs bus voltage.
+- `kinematics/index.html` — 3D delta + workspace + path
+- `nema17/index.html` — motor + torque curve

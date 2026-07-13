@@ -1,3 +1,3 @@
-# CAD sources (STEP / native)
+# CAD
 
-Place assembly and part files here. Prefer STEP for interchange plus whatever native format you design in.
+STEP / native files go here.

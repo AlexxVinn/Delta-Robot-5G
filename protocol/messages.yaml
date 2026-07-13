@@ -1,6 +1,5 @@
-# Host ↔ ESP32 binary protocol — source of truth.
-# Human companion: docs/protocol.md
-# Bump `version` when frame layout or semantics break compatibility.
+# Host ↔ ESP32 protocol. Bump version on breaking changes.
+# See docs/protocol.md
 
 version: 1
 sync: [0xA5, 0x5A]

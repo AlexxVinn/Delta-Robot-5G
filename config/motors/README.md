@@ -1,3 +1,5 @@
-# Drop your filled motor.yaml here (gitignored if you want privacy — currently
-# only machine.yaml is gitignored). Prefer committing a redacted motor.yaml
-# once the model is chosen so the dynamic model is reproducible.
+# Motor profiles
+
+Copy `motor.example.yaml` → `motor.yaml`, fill from datasheet, then:
+
+`python scripts/dynamic_model.py --motor config/motors/motor.yaml --accel-g 3`
