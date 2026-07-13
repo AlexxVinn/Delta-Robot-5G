@@ -1,10 +1,19 @@
 # Simulators
 
-Rough interactive approximations under `sim/`. Not production digital twins — enough to feel the kinematics workspace and the stepper torque/voltage tradeoffs before buying parts.
+Interactive approximations under `sim/`. Open the HTML files in a browser (no build).
 
-| Simulator | Open | What it does |
+| Simulator | Open | What |
 |---|---|---|
-| [kinematics/](kinematics/index.html) | open `kinematics/index.html` in a browser | Clavel delta IK/FK, arm visualization, reachable workspace map |
-| [nema17/](nema17/index.html) | open `nema17/index.html` in a browser | NEMA 17 body (primitives), electrical/mechanical params, torque–speed vs bus voltage |
+| [kinematics/](kinematics/index.html) | `kinematics/index.html` | **3D** Clavel delta: robot + reachable cloud in one scene, drag TCP, waypoint path playback |
+| [nema17/](nema17/index.html) | `nema17/index.html` | **3D** NEMA 17 + torque/voltage model, `?` tooltips, red–green–red range gauges |
 
-No build step. Geometry defaults match `config/machine.example.yaml`. Motor defaults match the BOM low-inductance NEMA17 target class.
+## Delta 3D controls
+
+- Drag background → orbit · scroll → zoom
+- Drag the **orange TCP handle** (transform gizmo) → move end effector (IK live)
+- **Add waypoint** / **Demo square** / **Play path** → Cartesian motion along a path
+- Workspace cloud lives in the **same** 3D space (toggle / rebuild density)
+
+## Motor gauges
+
+White tick on each parameter bar: left red = too low for this project, green = typical OK band, right red = too high / wasteful.

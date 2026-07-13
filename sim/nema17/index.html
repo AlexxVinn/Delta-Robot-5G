@@ -13,68 +13,89 @@
   <aside class="sidebar">
     <h1>NEMA 17</h1>
     <p class="sub">
-      Rough geometric + electrical/mechanical model of the Phase-1 target class:
-      low-inductance ~48&nbsp;mm body, dual shaft. Not a datasheet replacement —
-      shows why bus voltage and inductance dominate torque at speed.
+      3D dual-shaft body + RL-limited torque model. Hover <span class="help-inline">?</span> for what each value means.
+      White tick on the bar = where you are on <em>too low → OK → too high</em> for a high-speed delta.
     </p>
 
     <h2>Preset</h2>
-    <select id="preset">
-      <option value="bom" selected>BOM target (low-L ~1.6 mH, 2.0 A)</option>
-      <option value="generic">Generic 1.8° 1.5 A (~3.0 mH)</option>
-      <option value="hot">High-current 2.5 A (~1.4 mH)</option>
-    </select>
+    <select id="preset"></select>
 
     <h2>Electrical</h2>
-    <label>Bus voltage V <span class="val" id="v-v">48</span>
-      <input id="voltage" type="range" min="12" max="48" step="1" value="48" />
+    <label class="field" data-key="voltageV">
+      <span class="name">Bus voltage <button type="button" class="help" data-key="voltageV">?</button></span>
+      <span class="val" id="v-v">48</span>
+      <input id="voltage" type="range" min="12" max="52" step="1" value="48" />
+      <div class="gauge"><i></i></div>
     </label>
-    <label>Rated current A <span class="val" id="v-i">2.00</span>
-      <input id="current" type="range" min="0.8" max="2.8" step="0.05" value="2.0" />
+    <label class="field" data-key="ratedCurrentA">
+      <span class="name">Rated current <button type="button" class="help" data-key="ratedCurrentA">?</button></span>
+      <span class="val" id="v-i">2.00</span>
+      <input id="current" type="range" min="0.8" max="3.0" step="0.05" value="2.0" />
+      <div class="gauge"><i></i></div>
     </label>
-    <label>Phase resistance Ω <span class="val" id="v-r">1.20</span>
-      <input id="resistance" type="range" min="0.4" max="4.0" step="0.05" value="1.2" />
+    <label class="field" data-key="resistanceOhm">
+      <span class="name">Phase R <button type="button" class="help" data-key="resistanceOhm">?</button></span>
+      <span class="val" id="v-r">1.15</span>
+      <input id="resistance" type="range" min="0.4" max="4.0" step="0.05" value="1.15" />
+      <div class="gauge"><i></i></div>
     </label>
-    <label>Phase inductance mH <span class="val" id="v-l">1.60</span>
+    <label class="field" data-key="inductancemH">
+      <span class="name">Phase L <button type="button" class="help" data-key="inductancemH">?</button></span>
+      <span class="val" id="v-l">1.60</span>
       <input id="inductance" type="range" min="0.8" max="6.0" step="0.05" value="1.6" />
+      <div class="gauge"><i></i></div>
     </label>
 
     <h2>Mechanical</h2>
-    <label>Holding torque N·m <span class="val" id="v-th">0.45</span>
-      <input id="holdTorque" type="range" min="0.2" max="0.7" step="0.01" value="0.45" />
+    <label class="field" data-key="holdTorqueNm">
+      <span class="name">Holding torque <button type="button" class="help" data-key="holdTorqueNm">?</button></span>
+      <span class="val" id="v-th">0.45</span>
+      <input id="holdTorque" type="range" min="0.2" max="0.75" step="0.01" value="0.45" />
+      <div class="gauge"><i></i></div>
     </label>
-    <label>Rotor inertia g·cm² <span class="val" id="v-j">54</span>
-      <input id="inertia" type="range" min="30" max="90" step="1" value="54" />
+    <label class="field" data-key="inertiaGcm2">
+      <span class="name">Rotor inertia <button type="button" class="help" data-key="inertiaGcm2">?</button></span>
+      <span class="val" id="v-j">54</span>
+      <input id="inertia" type="range" min="30" max="95" step="1" value="54" />
+      <div class="gauge"><i></i></div>
     </label>
-    <label>Body length mm <span class="val" id="v-len">48</span>
+    <label class="field" data-key="bodyLenMm">
+      <span class="name">Body length <button type="button" class="help" data-key="bodyLenMm">?</button></span>
+      <span class="val" id="v-len">48</span>
       <input id="bodyLen" type="range" min="34" max="60" step="1" value="48" />
+      <div class="gauge"><i></i></div>
     </label>
-    <label>Microsteps <span class="val" id="v-ms">16</span>
+    <label class="field" data-key="microsteps">
+      <span class="name">Microsteps <button type="button" class="help" data-key="microsteps">?</button></span>
+      <span class="val" id="v-ms">16</span>
       <input id="microsteps" type="range" min="1" max="64" step="1" value="16" />
+      <div class="gauge"><i></i></div>
     </label>
 
     <h2>Operating point</h2>
-    <label>Speed rev/s <span class="val" id="v-spd">5.0</span>
+    <label class="field" data-key="speedRps">
+      <span class="name">Speed <button type="button" class="help" data-key="speedRps">?</button></span>
+      <span class="val" id="v-spd">5.0</span>
       <input id="speed" type="range" min="0" max="30" step="0.1" value="5" />
+      <div class="gauge"><i></i></div>
     </label>
 
     <div class="status" id="stats"></div>
-    <p class="sub" style="margin-top:1rem;margin-bottom:0">
-      Torque–speed uses a simple RL limited-current model:
-      I(ω) ≤ V / √(R²+(ωₑL)²), τ ∝ I. Good for comparing 24&nbsp;V vs 48&nbsp;V and low-L vs high-L — not for absolute pull-out claims.
-    </p>
+    <div class="verdict" id="verdict"></div>
   </aside>
 
   <main class="main">
     <section class="panel view3d">
-      <header>NEMA 17 body — dual shaft (primitives)</header>
+      <header>NEMA 17 — drag to orbit · dual shaft spins with speed</header>
       <div id="three"></div>
     </section>
     <section class="panel chart">
-      <header>Pull-out torque vs speed (approx.) — drag voltage to compare</header>
+      <header>Approx. pull-out torque vs speed · solid = your V · thin = 24 V ghost</header>
       <canvas id="curve"></canvas>
     </section>
   </main>
+
+  <div id="tooltip" hidden></div>
 
   <script type="importmap">
   {

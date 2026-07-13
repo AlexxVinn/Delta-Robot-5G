@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Delta kinematics simulator</title>
+  <title>Delta 3D kinematics simulator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -11,90 +11,108 @@
 </head>
 <body>
   <aside class="sidebar">
-    <h1>Delta kinematics</h1>
+    <h1>Delta 3D sim</h1>
     <p class="sub">
-      Clavel 3-RUU sketch: base platform, biceps (upper arms), forearms, effector.
-      Workspace cloud from joint-space FK sweep. Z+ toward the table.
+      One scene: robot + reachable cloud + motion path.
+      Drag to orbit · scroll to zoom · drag the orange TCP handle to move.
     </p>
 
     <h2>Geometry (mm)</h2>
-    <label>Base side <span class="val" id="v-base">200</span>
+    <label class="field">
+      <span class="name">Base side <button type="button" class="help" data-tip="Side length of the fixed top triangle (motor plane). Larger = wider stance, usually larger workspace sideways.">?</button></span>
+      <span class="val" id="v-base">200</span>
       <input id="baseSide" type="range" min="120" max="360" step="1" value="200" />
+      <div class="gauge" data-gauge="baseSide"></div>
     </label>
-    <label>Effector side <span class="val" id="v-eff">60</span>
+    <label class="field">
+      <span class="name">Effector side <button type="button" class="help" data-tip="Side length of the moving bottom platform. Smaller = lighter tool, slightly different reach.">?</button></span>
+      <span class="val" id="v-eff">60</span>
       <input id="effectorSide" type="range" min="30" max="120" step="1" value="60" />
+      <div class="gauge" data-gauge="effectorSide"></div>
     </label>
-    <label>Bicep / upper arm <span class="val" id="v-rf">120</span>
+    <label class="field">
+      <span class="name">Bicep (upper) <button type="button" class="help" data-tip="Motor axis → elbow length (rf). Sets how far the elbows swing.">?</button></span>
+      <span class="val" id="v-rf">120</span>
       <input id="upperArm" type="range" min="60" max="220" step="1" value="120" />
+      <div class="gauge" data-gauge="upperArm"></div>
     </label>
-    <label>Forearm <span class="val" id="v-re">280</span>
+    <label class="field">
+      <span class="name">Forearm <button type="button" class="help" data-tip="Elbow → effector joint length (re). Long forearms deepen the workspace under the base.">?</button></span>
+      <span class="val" id="v-re">280</span>
       <input id="forearm" type="range" min="120" max="420" step="1" value="280" />
+      <div class="gauge" data-gauge="forearm"></div>
     </label>
 
-    <h2>Drive mode</h2>
-    <div class="row">
-      <button type="button" id="modeJoint" class="secondary">Joints</button>
-      <button type="button" id="modeTcp">TCP (IK)</button>
-    </div>
-
-    <div id="jointControls">
-      <h2>Joint angles (deg)</h2>
-      <label>θ0 <span class="val" id="v-t0">30</span>
-        <input id="t0" type="range" min="-20" max="80" step="0.5" value="30" />
-      </label>
-      <label>θ1 <span class="val" id="v-t1">30</span>
-        <input id="t1" type="range" min="-20" max="80" step="0.5" value="30" />
-      </label>
-      <label>θ2 <span class="val" id="v-t2">30</span>
-        <input id="t2" type="range" min="-20" max="80" step="0.5" value="30" />
-      </label>
-    </div>
-
-    <div id="tcpControls" hidden>
-      <h2>TCP target (mm)</h2>
-      <label>X <span class="val" id="v-x">0</span>
-        <input id="x" type="range" min="-120" max="120" step="1" value="0" />
-      </label>
-      <label>Y <span class="val" id="v-y">0</span>
-        <input id="y" type="range" min="-120" max="120" step="1" value="0" />
-      </label>
-      <label>Z (down) <span class="val" id="v-z">250</span>
-        <input id="z" type="range" min="120" max="360" step="1" value="250" />
-      </label>
-    </div>
-
-    <h2>Workspace map</h2>
-    <label>Sweep resolution <span class="val" id="v-res">14</span>
-      <input id="res" type="range" min="8" max="20" step="1" value="14" />
+    <h2>TCP (mm, Z down)</h2>
+    <label class="field">
+      <span class="name">X <button type="button" class="help" data-tip="Horizontal offset from base center.">?</button></span>
+      <span class="val" id="v-x">0</span>
+      <input id="x" type="range" min="-120" max="120" step="1" value="0" />
     </label>
-    <button type="button" id="rebuild" class="secondary" style="width:100%;margin-top:0.35rem">
-      Rebuild workspace
+    <label class="field">
+      <span class="name">Y <button type="button" class="help" data-tip="Horizontal offset from base center (orthogonal to X).">?</button></span>
+      <span class="val" id="v-y">0</span>
+      <input id="y" type="range" min="-120" max="120" step="1" value="0" />
+    </label>
+    <label class="field">
+      <span class="name">Z down <button type="button" class="help" data-tip="Depth toward the table. Larger Z = effector lower / farther from the base.">?</button></span>
+      <span class="val" id="v-z">250</span>
+      <input id="z" type="range" min="120" max="360" step="1" value="250" />
+    </label>
+
+    <h2>Workspace cloud</h2>
+    <label class="field">
+      <span class="name">Density <button type="button" class="help" data-tip="Joint-space sweep resolution. Higher = denser cloud, slower rebuild.">?</button></span>
+      <span class="val" id="v-res">12</span>
+      <input id="res" type="range" min="6" max="16" step="1" value="12" />
+    </label>
+    <label class="check">
+      <input id="showCloud" type="checkbox" checked />
+      Show reachable points in scene
+    </label>
+    <button type="button" id="rebuild" class="secondary">Rebuild cloud</button>
+
+    <h2>Motion</h2>
+    <label class="field">
+      <span class="name">Path speed <button type="button" class="help" data-tip="Playback speed of the TCP along the planned Cartesian path (sim units, not real robot accel).">?</button></span>
+      <span class="val" id="v-spd">1.0×</span>
+      <input id="pathSpeed" type="range" min="0.2" max="3" step="0.1" value="1" />
+    </label>
+    <div class="btn-row">
+      <button type="button" id="addWp">Add waypoint</button>
+      <button type="button" id="clearWp" class="secondary">Clear</button>
+    </div>
+    <div class="btn-row">
+      <button type="button" id="playPath">Play path</button>
+      <button type="button" id="stopPath" class="secondary">Stop</button>
+    </div>
+    <button type="button" id="demoPath" class="secondary" style="width:100%;margin-top:0.4rem">
+      Demo: square path
     </button>
+    <div id="wpList" class="wp-list"></div>
 
     <div class="status ok" id="status">ready</div>
-    <p class="sub" style="margin-top:1rem;margin-bottom:0">
-      Defaults match <code>config/machine.example.yaml</code>. Math aligned with
-      <code>host</code> kinematics / <code>docs/kinematics.md</code>.
-    </p>
   </aside>
 
   <main class="main">
-    <div class="views">
-      <section class="panel">
-        <header>Side view (X–Z)</header>
-        <canvas id="side"></canvas>
-      </section>
-      <section class="panel">
-        <header>Top view (X–Y)</header>
-        <canvas id="top"></canvas>
-      </section>
+    <div id="viewport">
+      <div class="hud">
+        <span>orbit drag · scroll zoom · drag orange handle</span>
+        <span id="hudPose">—</span>
+      </div>
     </div>
-    <section class="panel workspace">
-      <header>Reachable workspace — XY projection colored by Z depth</header>
-      <canvas id="map"></canvas>
-    </section>
   </main>
 
+  <div id="tooltip" hidden></div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
   <script type="module" src="app.js"></script>
 </body>
 </html>

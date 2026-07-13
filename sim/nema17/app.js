@@ -1,6 +1,12 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { PRESETS, motorModel } from "./motor.js";
+import {
+  GAUGE_BANDS,
+  PRESETS,
+  TIPS,
+  gaugePos,
+  motorModel,
+} from "./motor.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -36,16 +42,36 @@ function paramsFromUi() {
   };
 }
 
-function syncLabels() {
-  $("v-v").textContent = ui.voltage.value;
-  $("v-i").textContent = (+ui.current.value).toFixed(2);
-  $("v-r").textContent = (+ui.resistance.value).toFixed(2);
-  $("v-l").textContent = (+ui.inductance.value).toFixed(2);
-  $("v-th").textContent = (+ui.holdTorque.value).toFixed(2);
-  $("v-j").textContent = ui.inertia.value;
-  $("v-len").textContent = ui.bodyLen.value;
-  $("v-ms").textContent = ui.microsteps.value;
-  $("v-spd").textContent = (+ui.speed.value).toFixed(1);
+function syncLabelsAndGauges() {
+  const p = paramsFromUi();
+  $("v-v").textContent = String(p.voltageV);
+  $("v-i").textContent = p.ratedCurrentA.toFixed(2);
+  $("v-r").textContent = p.resistanceOhm.toFixed(2);
+  $("v-l").textContent = (p.inductanceH * 1000).toFixed(2);
+  $("v-th").textContent = p.holdTorqueNm.toFixed(2);
+  $("v-j").textContent = String(p.inertiaGcm2);
+  $("v-len").textContent = String(p.bodyLenMm);
+  $("v-ms").textContent = String(p.microsteps);
+  $("v-spd").textContent = p.speedRps.toFixed(1);
+
+  const values = {
+    voltageV: p.voltageV,
+    ratedCurrentA: p.ratedCurrentA,
+    resistanceOhm: p.resistanceOhm,
+    inductancemH: p.inductanceH * 1000,
+    holdTorqueNm: p.holdTorqueNm,
+    inertiaGcm2: p.inertiaGcm2,
+    bodyLenMm: p.bodyLenMm,
+    microsteps: p.microsteps,
+    speedRps: p.speedRps,
+  };
+  document.querySelectorAll(".field[data-key]").forEach((field) => {
+    const key = field.dataset.key;
+    const band = GAUGE_BANDS[key];
+    const g = field.querySelector(".gauge");
+    if (!band || !g) return;
+    g.style.setProperty("--pos", `${gaugePos(band, values[key]) * 100}%`);
+  });
 }
 
 function applyPreset(name) {
@@ -59,75 +85,85 @@ function applyPreset(name) {
   ui.inertia.value = p.inertiaGcm2;
   ui.bodyLen.value = p.bodyLenMm;
   ui.microsteps.value = p.microsteps;
-  syncLabels();
+  syncLabelsAndGauges();
   rebuildMotorMesh();
   updateStats();
   drawCurve();
 }
 
-/** Build a NEMA 17-ish body from primitives (mm → scene units). */
 function buildNema17(bodyLenMm) {
   const g = new THREE.Group();
-  const mm = 0.01; // 1 scene unit = 100 mm → body ~0.42 wide
+  const mm = 0.01;
   const face = 42.3 * mm;
   const len = bodyLenMm * mm;
   const holePitch = 31.0 * mm;
-  const holeR = 1.5 * mm;
+  const holeR = 1.55 * mm;
   const bossR = 11.0 * mm;
   const bossH = 2.0 * mm;
   const shaftR = 2.5 * mm;
-  const shaftFront = 22 * mm;
-  const shaftRear = 12 * mm;
+  const shaftFront = 24 * mm;
+  const shaftRear = 14 * mm;
 
   const bodyMat = new THREE.MeshStandardMaterial({
-    color: 0xb8c0c8,
-    metalness: 0.55,
-    roughness: 0.4,
+    color: 0xb7c0c8,
+    metalness: 0.6,
+    roughness: 0.38,
   });
   const blackMat = new THREE.MeshStandardMaterial({
-    color: 0x1a1f24,
-    metalness: 0.2,
-    roughness: 0.7,
+    color: 0x171c21,
+    metalness: 0.25,
+    roughness: 0.65,
   });
   const shaftMat = new THREE.MeshStandardMaterial({
-    color: 0xd7dee5,
-    metalness: 0.85,
-    roughness: 0.25,
+    color: 0xd8e0e7,
+    metalness: 0.88,
+    roughness: 0.22,
   });
   const copperMat = new THREE.MeshStandardMaterial({
     color: 0xb87333,
-    metalness: 0.7,
-    roughness: 0.35,
+    metalness: 0.72,
+    roughness: 0.32,
   });
 
-  // laminated body
-  const body = new THREE.Mesh(new THREE.BoxGeometry(face, face, len), bodyMat);
-  g.add(body);
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(face, face, len), bodyMat));
 
-  // end bells
-  const bellGeo = new THREE.BoxGeometry(face * 1.01, face * 1.01, 3 * mm);
+  const bellGeo = new THREE.BoxGeometry(face * 1.02, face * 1.02, 3.2 * mm);
   const frontBell = new THREE.Mesh(bellGeo, blackMat);
-  frontBell.position.z = len / 2 + 1.5 * mm;
+  frontBell.position.z = len / 2 + 1.6 * mm;
   const rearBell = frontBell.clone();
-  rearBell.position.z = -len / 2 - 1.5 * mm;
+  rearBell.position.z = -len / 2 - 1.6 * mm;
   g.add(frontBell, rearBell);
 
-  // pilot boss
-  const boss = new THREE.Mesh(new THREE.CylinderGeometry(bossR, bossR, bossH, 32), blackMat);
+  // chamfered look via corner fillets (small cylinders)
+  for (const z of [len / 2 + 1.6 * mm, -len / 2 - 1.6 * mm]) {
+    for (const [sx, sy] of [
+      [1, 1],
+      [1, -1],
+      [-1, 1],
+      [-1, -1],
+    ]) {
+      const edge = new THREE.Mesh(
+        new THREE.BoxGeometry(3 * mm, 3 * mm, 3.2 * mm),
+        blackMat
+      );
+      edge.position.set(sx * (face / 2 - 1.2 * mm), sy * (face / 2 - 1.2 * mm), z);
+      g.add(edge);
+    }
+  }
+
+  const boss = new THREE.Mesh(new THREE.CylinderGeometry(bossR, bossR, bossH, 36), blackMat);
   boss.rotation.x = Math.PI / 2;
-  boss.position.z = len / 2 + 3 * mm + bossH / 2;
+  boss.position.z = len / 2 + 3.2 * mm + bossH / 2;
   g.add(boss);
 
-  // mounting holes (visual tubes)
-  const holePositions = [
+  for (const [x, y] of [
     [holePitch / 2, holePitch / 2],
     [holePitch / 2, -holePitch / 2],
     [-holePitch / 2, holePitch / 2],
     [-holePitch / 2, -holePitch / 2],
-  ];
-  for (const [x, y] of holePositions) {
+  ]) {
     const hole = new THREE.Mesh(
-      new THREE.CylinderGeometry(holeR, holeR, len + 8 * mm, 12),
+      new THREE.CylinderGeometry(holeR, holeR, len + 10 * mm, 14),
       blackMat
     );
     hole.rotation.x = Math.PI / 2;
@@ -135,26 +171,24 @@ function buildNema17(bodyLenMm) {
     g.add(hole);
   }
 
-  // dual shaft
   const shafts = [];
   const frontShaft = new THREE.Mesh(
-    new THREE.CylinderGeometry(shaftR, shaftR, shaftFront, 20),
+    new THREE.CylinderGeometry(shaftR, shaftR, shaftFront, 24),
     shaftMat
   );
   frontShaft.rotation.x = Math.PI / 2;
-  frontShaft.position.z = len / 2 + 3 * mm + bossH + shaftFront / 2;
+  frontShaft.position.z = len / 2 + 3.2 * mm + bossH + shaftFront / 2;
   const rearShaft = new THREE.Mesh(
-    new THREE.CylinderGeometry(shaftR, shaftR, shaftRear, 20),
+    new THREE.CylinderGeometry(shaftR, shaftR, shaftRear, 24),
     shaftMat
   );
   rearShaft.rotation.x = Math.PI / 2;
-  rearShaft.position.z = -len / 2 - 3 * mm - shaftRear / 2;
+  rearShaft.position.z = -len / 2 - 3.2 * mm - shaftRear / 2;
   g.add(frontShaft, rearShaft);
   shafts.push(frontShaft, rearShaft);
 
-  // flat on front shaft (D-cut suggestion)
   const flat = new THREE.Mesh(
-    new THREE.BoxGeometry(shaftR * 1.6, shaftR * 0.35, shaftFront * 0.55),
+    new THREE.BoxGeometry(shaftR * 1.7, shaftR * 0.32, shaftFront * 0.55),
     shaftMat
   );
   flat.position.copy(frontShaft.position);
@@ -162,22 +196,37 @@ function buildNema17(bodyLenMm) {
   g.add(flat);
   shafts.push(flat);
 
-  // winding hint rings inside a translucent shell
+  // encoder magnet hint on rear shaft
+  const mag = new THREE.Mesh(
+    new THREE.CylinderGeometry(shaftR * 1.35, shaftR * 1.35, 2 * mm, 16),
+    new THREE.MeshStandardMaterial({ color: 0x2a2f36, metalness: 0.4, roughness: 0.5 })
+  );
+  mag.rotation.x = Math.PI / 2;
+  mag.position.z = rearShaft.position.z - shaftRear / 2 - 1.2 * mm;
+  g.add(mag);
+
   const coil = new THREE.Mesh(
-    new THREE.TorusGeometry(face * 0.28, face * 0.06, 10, 24),
+    new THREE.TorusGeometry(face * 0.27, face * 0.055, 12, 28),
     copperMat
   );
-  coil.position.z = 0;
   g.add(coil);
 
-  // label plate
   const label = new THREE.Mesh(
-    new THREE.PlaneGeometry(face * 0.7, face * 0.28),
-    new THREE.MeshStandardMaterial({ color: 0xf0f2f4, metalness: 0.1, roughness: 0.8 })
+    new THREE.PlaneGeometry(face * 0.72, face * 0.3),
+    new THREE.MeshStandardMaterial({ color: 0xf2f4f6, metalness: 0.05, roughness: 0.82 })
   );
   label.position.set(0, face / 2 + 0.002, 0);
   label.rotation.x = -Math.PI / 2;
   g.add(label);
+
+  // lead wires stub
+  const wireMat = new THREE.MeshStandardMaterial({ color: 0x1f6a4a, roughness: 0.7 });
+  for (let i = 0; i < 4; i++) {
+    const w = new THREE.Mesh(new THREE.CylinderGeometry(0.8 * mm, 0.8 * mm, 18 * mm, 8), wireMat);
+    w.position.set(-face / 2 - 4 * mm, (i - 1.5) * 3.2 * mm, -len / 4);
+    w.rotation.z = Math.PI / 2;
+    g.add(w);
+  }
 
   g.userData.shafts = shafts;
   return g;
@@ -185,45 +234,44 @@ function buildNema17(bodyLenMm) {
 
 function initThree() {
   const mount = $("three");
-  const w = mount.clientWidth;
-  const h = mount.clientHeight;
-
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x182229);
 
-  camera = new THREE.PerspectiveCamera(40, w / h, 0.01, 50);
-  camera.position.set(1.1, 0.7, 1.3);
+  camera = new THREE.PerspectiveCamera(40, 1, 0.01, 50);
+  camera.position.set(1.15, 0.75, 1.35);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.setSize(w, h, false);
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
   mount.appendChild(renderer.domElement);
 
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
 
-  const hemi = new THREE.HemisphereLight(0xddeeff, 0x223322, 1.1);
-  const key = new THREE.DirectionalLight(0xffffff, 1.0);
+  scene.add(new THREE.HemisphereLight(0xddeeff, 0x223322, 1.1));
+  const key = new THREE.DirectionalLight(0xffffff, 1.05);
   key.position.set(2, 3, 2);
   const fill = new THREE.DirectionalLight(0x88aacc, 0.4);
   fill.position.set(-2, 1, -1);
-  scene.add(hemi, key, fill);
+  scene.add(key, fill);
 
   const grid = new THREE.GridHelper(3, 12, 0x3a4a56, 0x24323c);
   grid.position.y = -0.35;
   scene.add(grid);
 
   rebuildMotorMesh();
-
-  window.addEventListener("resize", () => {
-    const ww = mount.clientWidth;
-    const hh = mount.clientHeight;
-    camera.aspect = ww / hh;
-    camera.updateProjectionMatrix();
-    renderer.setSize(ww, hh, false);
-  });
-
+  resize();
+  window.addEventListener("resize", resize);
   animate();
+}
+
+function resize() {
+  const mount = $("three");
+  const w = mount.clientWidth;
+  const h = mount.clientHeight;
+  camera.aspect = w / Math.max(h, 1);
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h, false);
+  drawCurve();
 }
 
 function rebuildMotorMesh() {
@@ -237,12 +285,7 @@ function animate() {
   requestAnimationFrame(animate);
   const p = paramsFromUi();
   spinAngle += p.speedRps * Math.PI * 2 * 0.016;
-  if (motorGroup) {
-    // rotate shafts about local Z (motor axis)
-    for (const s of shaftMeshes) {
-      s.rotation.z = spinAngle;
-    }
-  }
+  for (const s of shaftMeshes) s.rotation.z = spinAngle;
   controls.update();
   renderer.render(scene, camera);
 }
@@ -251,27 +294,57 @@ function updateStats() {
   const p = paramsFromUi();
   const m = motorModel(p);
   const tau = m.torqueAtRevPerSec(p.speedRps);
-  const jKgM2 = p.inertiaGcm2 * 1e-7; // g·cm² → kg·m²
-  const alpha = tau / Math.max(jKgM2, 1e-12); // rad/s² unloaded
+  const i = m.currentAtRevPerSec(p.speedRps);
+  const jKgM2 = p.inertiaGcm2 * 1e-7;
+  const alpha = tau / Math.max(jKgM2, 1e-12);
   const drop = m.speedAtCurrentDrop(0.95);
   const stepHz = p.speedRps * m.stepsPerRev * p.microsteps;
+  const pct = (100 * tau) / p.holdTorqueNm;
 
   $("stats").textContent =
-    `τ(hold)     ${p.holdTorqueNm.toFixed(3)} N·m\n` +
-    `τ@${p.speedRps.toFixed(1)} rps  ${tau.toFixed(3)} N·m  (${((100 * tau) / p.holdTorqueNm).toFixed(0)}% hold)\n` +
-    `Kt          ${m.kt.toFixed(3)} N·m/A\n` +
-    `τ_e = L/R   ${m.electricalTimeConstantMs().toFixed(2)} ms\n` +
-    `I still ~Irated up to ~${drop.toFixed(1)} rev/s\n` +
-    `step pulse  ${stepHz.toFixed(0)} Hz @ ${p.microsteps} µsteps\n` +
-    `α unload    ${(alpha / (2 * Math.PI)).toFixed(1)} rev/s²\n` +
-    `J rotor     ${jKgM2.toExponential(2)} kg·m²`;
+    `τ hold        ${p.holdTorqueNm.toFixed(3)} N·m\n` +
+    `τ @ op        ${tau.toFixed(3)} N·m  (${pct.toFixed(0)}% of hold)\n` +
+    `I @ op        ${i.toFixed(2)} A  (rated ${p.ratedCurrentA.toFixed(2)} A)\n` +
+    `Kt            ${m.kt.toFixed(3)} N·m/A\n` +
+    `τ_e = L/R     ${m.electricalTimeConstantMs().toFixed(2)} ms\n` +
+    `τ_m (rough)   ${m.mechTimeConstantMs(jKgM2).toFixed(1)} ms\n` +
+    `BEMF / phase  ${m.backEmfPerPhaseV(p.speedRps).toFixed(2)} V\n` +
+    `Cu loss/phase ${m.copperLossW(p.speedRps).toFixed(2)} W\n` +
+    `I≈Irated to   ~${drop.toFixed(1)} rev/s\n` +
+    `step rate     ${stepHz.toFixed(0)} Hz\n` +
+    `α unload      ${(alpha / (2 * Math.PI)).toFixed(1)} rev/s²`;
+
+  const verdict = $("verdict");
+  let cls = "good";
+  let text =
+    "Looks usable for a high-speed open-loop delta at this operating point — still verify against the real motor pull-out curve.";
+  if (p.inductanceH * 1000 > 2.5 && p.voltageV < 36) {
+    cls = "bad";
+    text =
+      "High inductance + low bus voltage: torque will collapse early with speed. This fights the project goal.";
+  } else if (pct < 45 && p.speedRps > 4) {
+    cls = "bad";
+    text =
+      "At this speed you are already under half of holding torque. Raise V, lower L, add reduction, or slow down.";
+  } else if (p.inductanceH * 1000 > 2.2 || p.voltageV < 40) {
+    cls = "mid";
+    text =
+      "Workable but not ideal for ~3 g class moves. Prefer ≤~2 mH windings and ~48 V bus like the BOM target.";
+  } else if (pct > 70) {
+    cls = "good";
+    text =
+      "Strong torque margin at this speed in the approximate model. Still leave headroom for Jacobian / edges.";
+  }
+  verdict.className = "verdict " + cls;
+  verdict.textContent = text;
 }
 
 function drawCurve() {
   const canvas = $("curve");
-  const dpr = window.devicePixelRatio || 1;
+  const dpr = devicePixelRatio || 1;
   const w = canvas.clientWidth;
   const h = canvas.clientHeight;
+  if (w < 10 || h < 10) return;
   canvas.width = Math.floor(w * dpr);
   canvas.height = Math.floor(h * dpr);
   const ctx = canvas.getContext("2d");
@@ -286,21 +359,12 @@ function drawCurve() {
   const iw = w - pad.l - pad.r;
   const ih = h - pad.t - pad.b;
 
-  // axes
   ctx.strokeStyle = "#2a3a46";
-  ctx.lineWidth = 1;
   ctx.strokeRect(pad.l, pad.t, iw, ih);
-
   ctx.fillStyle = "#8aa0ae";
   ctx.font = "11px IBM Plex Mono, monospace";
   ctx.fillText("rev/s", w - 44, h - 10);
-  ctx.save();
-  ctx.translate(14, h / 2);
-  ctx.rotate(-Math.PI / 2);
-  ctx.fillText("N·m", 0, 0);
-  ctx.restore();
 
-  // grid
   for (let i = 0; i <= 6; i++) {
     const x = pad.l + (iw * i) / 6;
     const y = pad.t + (ih * i) / 6;
@@ -313,21 +377,18 @@ function drawCurve() {
     ctx.moveTo(pad.l, y);
     ctx.lineTo(pad.l + iw, y);
     ctx.stroke();
-    const nTick = (nMax * i) / 6;
-    const tTick = tauMax * (1 - i / 6);
     ctx.fillStyle = "#8aa0ae";
-    ctx.fillText(nTick.toFixed(0), x - 6, h - 14);
-    ctx.fillText(tTick.toFixed(2), 8, y + 3);
+    ctx.fillText(((nMax * i) / 6).toFixed(0), x - 6, h - 14);
+    ctx.fillText((tauMax * (1 - i / 6)).toFixed(2), 8, y + 3);
   }
 
-  // compare 24V ghost if not already 24
-  const drawTrace = (voltage, color, width) => {
+  const trace = (voltage, color, width) => {
     const mm = motorModel({ ...p, voltageV: voltage });
     ctx.strokeStyle = color;
     ctx.lineWidth = width;
     ctx.beginPath();
-    for (let i = 0; i <= 80; i++) {
-      const n = (nMax * i) / 80;
+    for (let i = 0; i <= 100; i++) {
+      const n = (nMax * i) / 100;
       const tau = mm.torqueAtRevPerSec(n);
       const x = pad.l + (n / nMax) * iw;
       const y = pad.t + (1 - tau / tauMax) * ih;
@@ -337,10 +398,9 @@ function drawCurve() {
     ctx.stroke();
   };
 
-  if (p.voltageV !== 24) drawTrace(24, "#6b5a3c", 1.5);
-  drawTrace(p.voltageV, "#3cb8a5", 2.5);
+  if (Math.abs(p.voltageV - 24) > 0.5) trace(24, "#6b5a3c", 1.5);
+  trace(p.voltageV, "#3cb8a5", 2.6);
 
-  // operating point
   const tauOp = m.torqueAtRevPerSec(p.speedRps);
   const ox = pad.l + (p.speedRps / nMax) * iw;
   const oy = pad.t + (1 - tauOp / tauMax) * ih;
@@ -348,27 +408,45 @@ function drawCurve() {
   ctx.beginPath();
   ctx.arc(ox, oy, 4.5, 0, Math.PI * 2);
   ctx.fill();
+}
 
-  ctx.fillStyle = "#8aa0ae";
-  ctx.fillText(
-    p.voltageV !== 24 ? `solid ${p.voltageV}V · thin 24V ghost` : `${p.voltageV}V`,
-    pad.l + 8,
-    pad.t + 14
-  );
+function bindTooltips() {
+  const tip = $("tooltip");
+  document.querySelectorAll(".help").forEach((btn) => {
+    btn.addEventListener("mouseenter", () => {
+      tip.hidden = false;
+      tip.textContent = TIPS[btn.dataset.key] || "";
+      const r = btn.getBoundingClientRect();
+      tip.style.left = `${Math.min(r.left, innerWidth - 300)}px`;
+      tip.style.top = `${r.bottom + 8}px`;
+    });
+    btn.addEventListener("mouseleave", () => {
+      tip.hidden = true;
+    });
+  });
 }
 
 function bind() {
+  // fill presets
+  ui.preset.innerHTML = "";
+  for (const [key, p] of Object.entries(PRESETS)) {
+    const opt = document.createElement("option");
+    opt.value = key;
+    opt.textContent = p.label;
+    ui.preset.appendChild(opt);
+  }
+
   for (const el of Object.values(ui)) {
     if (el === ui.preset) continue;
     el.addEventListener("input", () => {
-      syncLabels();
+      syncLabelsAndGauges();
       if (el === ui.bodyLen) rebuildMotorMesh();
       updateStats();
       drawCurve();
     });
   }
   ui.preset.addEventListener("change", () => applyPreset(ui.preset.value));
-  window.addEventListener("resize", drawCurve);
+  bindTooltips();
 }
 
 bind();
