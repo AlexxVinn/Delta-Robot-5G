@@ -24,7 +24,7 @@ const ui = {
 };
 
 let motorGroup = null;
-let shaftMeshes = [];
+let rotor = null;
 let renderer, scene, camera, controls;
 let spinAngle = 0;
 
@@ -171,39 +171,50 @@ function buildNema17(bodyLenMm) {
     g.add(hole);
   }
 
-  const shafts = [];
+  // Rotor assembly: spin this group around Z (motor axis).
+  // Cylinders are Y-up by default; rotate.x = π/2 once here, never animate Euler on them.
+  const rotor = new THREE.Group();
+  g.add(rotor);
+
   const frontShaft = new THREE.Mesh(
     new THREE.CylinderGeometry(shaftR, shaftR, shaftFront, 24),
     shaftMat
   );
   frontShaft.rotation.x = Math.PI / 2;
   frontShaft.position.z = len / 2 + 3.2 * mm + bossH + shaftFront / 2;
+  rotor.add(frontShaft);
+
   const rearShaft = new THREE.Mesh(
     new THREE.CylinderGeometry(shaftR, shaftR, shaftRear, 24),
     shaftMat
   );
   rearShaft.rotation.x = Math.PI / 2;
   rearShaft.position.z = -len / 2 - 3.2 * mm - shaftRear / 2;
-  g.add(frontShaft, rearShaft);
-  shafts.push(frontShaft, rearShaft);
+  rotor.add(rearShaft);
 
+  // D-flat: thin pad on the +Y side of the front shaft (spins with rotor around Z)
   const flat = new THREE.Mesh(
-    new THREE.BoxGeometry(shaftR * 1.7, shaftR * 0.32, shaftFront * 0.55),
+    new THREE.BoxGeometry(shaftR * 1.55, 0.9 * mm, shaftFront * 0.5),
     shaftMat
   );
-  flat.position.copy(frontShaft.position);
-  flat.position.y += shaftR * 0.55;
-  g.add(flat);
-  shafts.push(flat);
+  flat.position.set(0, shaftR - 0.2 * mm, frontShaft.position.z);
+  rotor.add(flat);
 
-  // encoder magnet hint on rear shaft
+  // Index mark so rotation direction is obvious
+  const mark = new THREE.Mesh(
+    new THREE.BoxGeometry(1.2 * mm, shaftR * 0.9, 2.5 * mm),
+    new THREE.MeshStandardMaterial({ color: 0xe0a15a, metalness: 0.3, roughness: 0.45 })
+  );
+  mark.position.set(0, shaftR * 0.55, frontShaft.position.z + shaftFront / 2 - 1.5 * mm);
+  rotor.add(mark);
+
   const mag = new THREE.Mesh(
     new THREE.CylinderGeometry(shaftR * 1.35, shaftR * 1.35, 2 * mm, 16),
     new THREE.MeshStandardMaterial({ color: 0x2a2f36, metalness: 0.4, roughness: 0.5 })
   );
   mag.rotation.x = Math.PI / 2;
   mag.position.z = rearShaft.position.z - shaftRear / 2 - 1.2 * mm;
-  g.add(mag);
+  rotor.add(mag);
 
   const coil = new THREE.Mesh(
     new THREE.TorusGeometry(face * 0.27, face * 0.055, 12, 28),
@@ -228,7 +239,7 @@ function buildNema17(bodyLenMm) {
     g.add(w);
   }
 
-  g.userData.shafts = shafts;
+  g.userData.rotor = rotor;
   return g;
 }
 
@@ -279,14 +290,14 @@ function rebuildMotorMesh() {
   if (motorGroup) scene.remove(motorGroup);
   motorGroup = buildNema17(+ui.bodyLen.value);
   scene.add(motorGroup);
-  shaftMeshes = motorGroup.userData.shafts || [];
+  rotor = motorGroup.userData.rotor || null;
 }
 
 function animate() {
   requestAnimationFrame(animate);
   const p = paramsFromUi();
   spinAngle += p.speedRps * Math.PI * 2 * 0.016;
-  for (const s of shaftMeshes) s.rotation.z = spinAngle;
+  if (rotor) rotor.rotation.z = spinAngle;
   controls.update();
   renderer.render(scene, camera);
 }
