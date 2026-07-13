@@ -13,8 +13,7 @@
   <aside class="sidebar">
     <h1>NEMA 17</h1>
     <p class="sub">
-      3D dual-shaft body + RL-limited torque model. Hover <span class="help-inline">?</span> for what each value means.
-      White tick on the bar = where you are on <em>too low → OK → too high</em> for a high-speed delta.
+      Torque–speed model for the BOM motor class. Hover <span class="help-inline">?</span> for definitions. Gauge tick: low · OK · high.
     </p>
 
     <h2>Preset</h2>
@@ -86,11 +85,11 @@
 
   <main class="main">
     <section class="panel view3d">
-      <header>NEMA 17 — drag to orbit · dual shaft spins with speed</header>
+      <header>3D model</header>
       <div id="three"></div>
     </section>
     <section class="panel chart">
-      <header>Approx. pull-out torque vs speed · solid = your V · thin = 24 V ghost</header>
+      <header>torque vs speed</header>
       <canvas id="curve"></canvas>
     </section>
   </main>

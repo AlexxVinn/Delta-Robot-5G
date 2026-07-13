@@ -138,8 +138,7 @@ function makeMaterial(color, opts = {}) {
 function buildScene() {
   const mount = $("viewport");
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0f1419);
-  scene.fog = new THREE.Fog(0x0f1419, 8, 22);
+  scene.background = new THREE.Color(0xf3f4f6);
 
   camera = new THREE.PerspectiveCamera(42, 1, 0.05, 100);
   camera.position.set(4.2, 2.2, 4.5);
@@ -152,19 +151,18 @@ function buildScene() {
   orbit.enableDamping = true;
   orbit.target.set(0, -2.2, 0);
 
-  const hemi = new THREE.HemisphereLight(0xcfe8ff, 0x1a2218, 1.05);
-  const key = new THREE.DirectionalLight(0xffffff, 1.05);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0xd0d4d8, 1.0);
+  const key = new THREE.DirectionalLight(0xffffff, 0.75);
   key.position.set(4, 6, 3);
-  scene.add(hemi, key, new THREE.AmbientLight(0x405060, 0.35));
+  scene.add(hemi, key, new THREE.AmbientLight(0xffffff, 0.35));
 
-  const grid = new THREE.GridHelper(10, 20, 0x33404a, 0x222c34);
+  const grid = new THREE.GridHelper(10, 20, 0xb8c0c8, 0xd5dae0);
   grid.position.y = -4.2;
   scene.add(grid);
 
-  // floor disk (table suggestion)
   const floor = new THREE.Mesh(
     new THREE.CircleGeometry(3.5, 48),
-    makeMaterial(0x1a222a, { roughness: 0.9, metalness: 0.05 })
+    makeMaterial(0xe8eaed, { roughness: 0.95, metalness: 0.02 })
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -4.2;
@@ -176,7 +174,7 @@ function buildScene() {
   // TCP handle
   handle = new THREE.Mesh(
     new THREE.SphereGeometry(0.08, 24, 16),
-    makeMaterial(0xe08945, { metalness: 0.4, roughness: 0.35 })
+    makeMaterial(0xc56a2e, { metalness: 0.25, roughness: 0.4 })
   );
   scene.add(handle);
 
@@ -196,7 +194,7 @@ function buildScene() {
 
   pathLine = new THREE.Line(
     new THREE.BufferGeometry(),
-    new THREE.LineBasicMaterial({ color: 0x2aa89a })
+    new THREE.LineBasicMaterial({ color: 0x0b6b63 })
   );
   scene.add(pathLine);
 
@@ -206,10 +204,10 @@ function buildScene() {
   cloudPoints = new THREE.Points(
     new THREE.BufferGeometry(),
     new THREE.PointsMaterial({
-      size: 0.035,
+      size: 0.04,
       vertexColors: true,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.7,
       depthWrite: false,
     })
   );
@@ -285,11 +283,11 @@ function rebuildRobotStructure() {
   for (let i = 0; i < 3; i++) {
     const bicep = new THREE.Mesh(
       new THREE.CylinderGeometry(0.035, 0.035, 1, 10),
-      makeMaterial(0x2aa89a, { metalness: 0.35 })
+      makeMaterial(0x3d8f86, { metalness: 0.2 })
     );
     const forearm = new THREE.Mesh(
       new THREE.CylinderGeometry(0.022, 0.022, 1, 10),
-      makeMaterial(0xe08945, { metalness: 0.3 })
+      makeMaterial(0xc56a2e, { metalness: 0.2 })
     );
     bicep.userData.kind = "bicep";
     forearm.userData.kind = "forearm";
@@ -379,7 +377,7 @@ function rebuildCloud() {
     positions[i * 3 + 1] = v.y;
     positions[i * 3 + 2] = v.z;
     const t = zMax === zMin ? 0.5 : (p.z - zMin) / (zMax - zMin);
-    col.setRGB(0.15 + 0.75 * t, 0.65 - 0.35 * t, 0.55 - 0.4 * t);
+    col.setRGB(0.12 + 0.55 * t, 0.45 - 0.2 * t, 0.42 - 0.25 * t);
     colors[i * 3] = col.r;
     colors[i * 3 + 1] = col.g;
     colors[i * 3 + 2] = col.b;
@@ -397,7 +395,7 @@ function refreshPathGraphics() {
   for (const p of pts) {
     const m = new THREE.Mesh(
       new THREE.SphereGeometry(0.05, 12, 10),
-      makeMaterial(0x2aa89a)
+      makeMaterial(0x0b6b63)
     );
     m.position.copy(p);
     wpGroup.add(m);

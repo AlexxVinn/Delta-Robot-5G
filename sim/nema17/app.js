@@ -246,7 +246,7 @@ function buildNema17(bodyLenMm) {
 function initThree() {
   const mount = $("three");
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x182229);
+  scene.background = new THREE.Color(0xf3f4f6);
 
   camera = new THREE.PerspectiveCamera(40, 1, 0.01, 50);
   camera.position.set(1.15, 0.75, 1.35);
@@ -258,14 +258,14 @@ function initThree() {
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
 
-  scene.add(new THREE.HemisphereLight(0xddeeff, 0x223322, 1.1));
-  const key = new THREE.DirectionalLight(0xffffff, 1.05);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xd0d4d8, 1.0));
+  const key = new THREE.DirectionalLight(0xffffff, 0.8);
   key.position.set(2, 3, 2);
-  const fill = new THREE.DirectionalLight(0x88aacc, 0.4);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.25);
   fill.position.set(-2, 1, -1);
   scene.add(key, fill);
 
-  const grid = new THREE.GridHelper(3, 12, 0x3a4a56, 0x24323c);
+  const grid = new THREE.GridHelper(3, 12, 0xb8c0c8, 0xd5dae0);
   grid.position.y = -0.35;
   scene.add(grid);
 
@@ -371,16 +371,20 @@ function drawCurve() {
   const iw = w - pad.l - pad.r;
   const ih = h - pad.t - pad.b;
 
-  ctx.strokeStyle = "#2a3a46";
+  ctx.fillStyle = "#f3f4f6";
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.strokeStyle = "#d7dbe0";
   ctx.strokeRect(pad.l, pad.t, iw, ih);
-  ctx.fillStyle = "#8aa0ae";
+  ctx.fillStyle = "#5c6570";
   ctx.font = "11px IBM Plex Mono, monospace";
   ctx.fillText("rev/s", w - 44, h - 10);
+  ctx.fillText("N·m", 8, 18);
 
   for (let i = 0; i <= 6; i++) {
     const x = pad.l + (iw * i) / 6;
     const y = pad.t + (ih * i) / 6;
-    ctx.strokeStyle = "#22303a";
+    ctx.strokeStyle = "#e5e8ec";
     ctx.beginPath();
     ctx.moveTo(x, pad.t);
     ctx.lineTo(x, pad.t + ih);
@@ -389,7 +393,7 @@ function drawCurve() {
     ctx.moveTo(pad.l, y);
     ctx.lineTo(pad.l + iw, y);
     ctx.stroke();
-    ctx.fillStyle = "#8aa0ae";
+    ctx.fillStyle = "#5c6570";
     ctx.fillText(((nMax * i) / 6).toFixed(0), x - 6, h - 14);
     ctx.fillText((tauMax * (1 - i / 6)).toFixed(2), 8, y + 3);
   }
@@ -410,15 +414,15 @@ function drawCurve() {
     ctx.stroke();
   };
 
-  if (Math.abs(p.voltageV - 24) > 0.5) trace(24, "#6b5a3c", 1.5);
-  trace(p.voltageV, "#3cb8a5", 2.6);
+  if (Math.abs(p.voltageV - 24) > 0.5) trace(24, "#a89878", 1.25);
+  trace(p.voltageV, "#0b6b63", 2.25);
 
   const tauOp = m.torqueAtRevPerSec(p.speedRps);
   const ox = pad.l + (p.speedRps / nMax) * iw;
   const oy = pad.t + (1 - tauOp / tauMax) * ih;
-  ctx.fillStyle = "#e0a15a";
+  ctx.fillStyle = "#c56a2e";
   ctx.beginPath();
-  ctx.arc(ox, oy, 4.5, 0, Math.PI * 2);
+  ctx.arc(ox, oy, 4, 0, Math.PI * 2);
   ctx.fill();
 }
 
