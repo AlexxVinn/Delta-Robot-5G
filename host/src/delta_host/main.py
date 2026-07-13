@@ -43,9 +43,27 @@ def main(argv: list[str] | None = None) -> int:
     p_ik = sub.add_parser("ik", help="Inverse kinematics")
     p_ik.add_argument("--xyz", required=True, help="mm, comma-separated")
 
-    p_modes = sub.add_parser("modes", help="List mode profiles")
+    sub.add_parser("modes", help="List mode profiles")
+
+    p_cam = sub.add_parser("camera-probe", help="List OpenCV-visible cameras (needs [vision])")
+    p_cam.add_argument("--max-index", type=int, default=6)
 
     args = parser.parse_args(argv)
+
+    if args.cmd == "camera-probe":
+        from delta_host.vision import list_cameras
+
+        try:
+            cams = list_cameras(args.max_index)
+        except RuntimeError as e:
+            print(str(e), file=sys.stderr)
+            return 2
+        if not cams:
+            print("no cameras found", file=sys.stderr)
+            return 1
+        for c in cams:
+            print(f"{c.index}: {c.width}x{c.height} @ {c.fps:.1f} fps  backend={c.backend}")
+        return 0
 
     machine = load_yaml(default_machine_path())
     geom = load_geometry(machine)

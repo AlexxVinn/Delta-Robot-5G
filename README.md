@@ -22,59 +22,51 @@ OV9281 → Host (detect / predict / plan / IK) ──USB serial──► ESP32 �
 ## Repository layout
 
 ```
-config/          machine geometry + Speed/Precise profiles
+config/          machine + motor profiles + Speed/Precise modes
 protocol/        host↔MCU message schema (shared contract)
 firmware/        ESP32 PlatformIO executor
 host/            Python: kinematics, vision, planner, serial link
 hardware/        CAD + printable parts
 sim/             browser kinematics + NEMA 17 rough simulators
-docs/            architecture, protocol, kinematics, safety, ADRs, BOM
-scripts/         analysis tools (dynamic model, …)
+docs/            architecture, procurement, wiring, bring-up, BOM, …
+scripts/         dynamic model, protocol self-test
 ```
 
 ## Documentation index
 
 | Doc | What |
 |---|---|
+| [`docs/procurement.md`](docs/procurement.md) | **Buy first** — AliExpress filters + arrival checklist |
+| [`docs/wiring.md`](docs/wiring.md) | ESP32 ↔ TMC5160 pin map + 48 V bus |
+| [`docs/bringup.md`](docs/bringup.md) | Power-on ladder from software-only → tracked catch |
 | [`docs/BOM.md`](docs/BOM.md) | Parts list, motor selection, Phase-2 upgrade path |
-| [`docs/architecture.md`](docs/architecture.md) | Control topology, latency budget, repo map |
+| [`docs/architecture.md`](docs/architecture.md) | Control topology, latency budget |
 | [`docs/protocol.md`](docs/protocol.md) | Serial framing and message catalog |
 | [`docs/kinematics.md`](docs/kinematics.md) | Frames, joint zero, IK/FK conventions |
 | [`docs/safety.md`](docs/safety.md) | Non-negotiable electrical/mechanical rules |
 | [`docs/decisions/`](docs/decisions/) | Architecture Decision Records |
 | [`docs/build-log.md`](docs/build-log.md) | Dated engineering journal |
-| [`sim/`](sim/) | Browser kinematics + NEMA 17 rough simulators |
+| [`sim/`](sim/) | Browser kinematics + NEMA 17 simulators |
 
-## Quick start (dev skeleton)
-
-**Host**
+## Quick start (right now, before parcels)
 
 ```bash
 cd host
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 pytest
+delta-host ik --xyz 0,0,250
+python ../scripts/protocol_selftest.py
+python ../scripts/dynamic_model.py --motor ../config/motors/motor.example.yaml --accel-g 3
 ```
 
-**Firmware** (requires [PlatformIO](https://platformio.org/))
+When the camera arrives: `pip install -e ".[vision]" && delta-host camera-probe`.
 
-```bash
-cd firmware
-pio run
-```
+**Firmware** (requires [PlatformIO](https://platformio.org/)): `cd firmware && pio run`
 
-**Dynamic model** (run before freezing pulley ratio)
+**Simulators:** open [`sim/kinematics/index.html`](sim/kinematics/index.html) / [`sim/nema17/index.html`](sim/nema17/index.html)
 
-```bash
-python scripts/dynamic_model.py --help
-```
-
-**Simulators** (no build — open in a browser)
-
-- [`sim/kinematics/index.html`](sim/kinematics/index.html) — delta IK/FK + workspace map
-- [`sim/nema17/index.html`](sim/nema17/index.html) — NEMA 17 body + torque/voltage model
-
-Copy `config/machine.example.yaml` → `config/machine.yaml` and fill real geometry (local `machine.yaml` is gitignored).
+Copy `config/machine.example.yaml` → `config/machine.yaml` when geometry is measured. After motor datasheets arrive, copy `config/motors/motor.example.yaml` → `config/motors/motor.yaml` and re-run the dynamic model **before** ordering pulleys.
 
 ## Licenses
 
@@ -86,4 +78,4 @@ Copy `config/machine.example.yaml` → `config/machine.yaml` and fill real geome
 
 ## Status
 
-Foundation / bring-up scaffolding. Mechanics and calibrated machine parameters are not frozen until the dynamic model and frame design are done — see the build log.
+Procurement phase: buy motors / HV TMC5160 / OV9281 first ([`docs/procurement.md`](docs/procurement.md)). Mechanics not frozen until dynamic model passes on real motor numbers.

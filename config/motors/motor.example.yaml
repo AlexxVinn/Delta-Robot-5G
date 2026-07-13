@@ -1,0 +1,32 @@
+# Copy to motor.yaml after the parcel arrives and fill from the datasheet PDF.
+# Used by scripts/dynamic_model.py — freeze pulley ratio only after this passes.
+
+meta:
+  name: "nema17-tbd"
+  vendor: ""
+  model: ""
+  source: "datasheet"   # datasheet | listing | measured
+  notes: "Replace placeholders before ordering pulleys."
+
+electrical:
+  supply_v_nominal: 48.0
+  rated_current_a: 2.0
+  phase_resistance_ohm: 1.15
+  phase_inductance_mH: 1.6      # HARD FILTER on purchase: prefer ≤ 1.8
+
+mechanical:
+  holding_torque_nm: 0.45
+  # Usable torque at speed is NOT holding torque. If datasheet has a pull-out
+  # curve, put an estimate at your operating rev/s here:
+  pullout_torque_nm_at_speed: 0.35
+  pullout_speed_rps: 5.0
+  rotor_inertia_g_cm2: 54.0
+  body_length_mm: 48
+  step_angle_deg: 1.8
+  dual_shaft: true
+
+drive:
+  microsteps: 16
+  # Default planning assumption until you redesign
+  reduction_ratio: 3.0
+  motor_pulley_teeth: 20
