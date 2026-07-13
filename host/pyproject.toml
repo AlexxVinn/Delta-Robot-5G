@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "delta-host"
+version = "0.1.0"
+description = "Host-side vision, planning, and IK for Delta-Robot-5G"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Delta-Robot-5G contributors" }]
+dependencies = [
+  "numpy>=1.24",
+  "pyserial>=3.5",
+  "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.4",
+  "ruff>=0.4",
+]
+vision = [
+  "opencv-python-headless>=4.8",
+]
+
+[project.scripts]
+delta-host = "delta_host.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

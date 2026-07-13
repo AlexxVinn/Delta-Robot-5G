@@ -6,7 +6,7 @@
 **Realistic target:** ~3 g peak acceleration, ±0.2 mm class repeatability, two software modes (Speed / Precise)
 **Budget:** ~$400 USD for Phase 1
 
-> Prices are rough estimates in USD and will vary by supplier/region. This document is the single source of truth for what to buy — update the version number and changelog when it changes.
+> Prices are rough estimates in USD and will vary by supplier/region. This document is the human source of truth for what to buy — update the version number and changelog when it changes. Machine-readable mirror: [`bom.csv`](bom.csv).
 
 ---
 
