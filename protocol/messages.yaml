@@ -1,0 +1,41 @@
+# Host ↔ ESP32 protocol. Bump version on breaking changes.
+# See docs/protocol.md
+
+version: 1
+sync: [0xA5, 0x5A]
+endian: little
+crc: { type: crc8_maxim, over: "version_through_payload" }
+max_payload: 64
+default_baud: 921600
+
+host_to_mcu:
+  HELLO:         { code: 0x01, payload: ["u32 host_proto_version"] }
+  SET_MODE:      { code: 0x02, payload: ["u8 mode_id"] }
+  HOME:          { code: 0x10, payload: ["u8 axes_mask"] }
+  ENABLE:        { code: 0x11, payload: ["u8 enable"] }
+  STREAM_BEGIN:  { code: 0x20, payload: ["u16 rate_hz", "u16 timeout_ms"] }
+  STREAM_JOINTS: { code: 0x21, payload: ["u32 host_time_us", "i32 q0", "i32 q1", "i32 q2", "u16 segment_dt_us"] }
+  STREAM_END:    { code: 0x22, payload: [] }
+  GET_STATUS:    { code: 0x30, payload: [] }
+  SET_CURRENT:   { code: 0x31, payload: ["u8 axis", "u16 ma_run", "u16 ma_hold"] }
+  ESTOP:         { code: 0x7F, payload: ["u8 reason"] }
+
+mcu_to_host:
+  ACK:    { code: 0x81, payload: ["u8 of_type", "u8 status", "u32 mcu_proto_version"] }
+  STATUS: { code: 0x82, payload: ["u32 mcu_time_us", "i32 q0", "i32 q1", "i32 q2", "u8 flags", "u8 stall_mask", "u16 bus_mv"] }
+  FAULT:  { code: 0x83, payload: ["u8 code", "u32 detail"] }
+  PONG:   { code: 0x84, payload: ["u32 host_time_echo"] }
+
+fault_codes:
+  1: FAULT_STREAM_TIMEOUT
+  2: FAULT_STALL
+  3: FAULT_PROTOCOL
+  4: FAULT_NOT_HOMED
+  5: FAULT_ESTOP
+  6: FAULT_DRIVER
+
+flags_bits:
+  0: enabled
+  1: homed
+  2: streaming
+  3: fault

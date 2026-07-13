@@ -1,0 +1,244 @@
+:root {
+  --bg: #f3f4f6;
+  --side: #ffffff;
+  --ink: #1a1d21;
+  --muted: #5c6570;
+  --line: #d7dbe0;
+  --accent: #0b6b63;
+  --ok: #1b7a45;
+  --bad: #b42318;
+  --font: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  color: var(--ink);
+  font-family: var(--font);
+  background: var(--bg);
+}
+
+body {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+}
+
+.sidebar {
+  padding: 12px 14px 20px;
+  background: var(--side);
+  border-right: 1px solid var(--line);
+  overflow: auto;
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sub {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+h2 {
+  margin: 14px 0 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  margin: 0 0 10px;
+  font-size: 13px;
+}
+
+.field .name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.field .val {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.field input[type="range"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0;
+}
+
+.help {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: #f8f9fa;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1;
+  padding: 0;
+  cursor: help;
+}
+
+.help:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.gauge {
+  grid-column: 1 / -1;
+  height: 5px;
+  position: relative;
+  background: linear-gradient(90deg, #c44 0%, #c44 18%, #2f9e60 34%, #2f9e60 66%, #c44 82%, #c44 100%);
+}
+
+.gauge::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: var(--pos, 50%);
+  width: 2px;
+  height: 11px;
+  margin-left: -1px;
+  background: var(--ink);
+}
+
+.check {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 4px 0 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+button {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  border-radius: 2px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+button:hover { background: #eef1f4; }
+
+button.primary,
+#playPath,
+#addWp {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+button.primary:hover,
+#playPath:hover,
+#addWp:hover {
+  filter: brightness(0.95);
+}
+
+.wp-list {
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  max-height: 72px;
+  overflow: auto;
+}
+
+.status {
+  margin-top: 12px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  background: #f8f9fa;
+  font-family: var(--mono);
+  font-size: 11px;
+  white-space: pre-wrap;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.status.ok { border-color: #b7d7c2; }
+.status.bad {
+  border-color: #e4b4b0;
+  color: var(--bad);
+  background: #fbf4f3;
+}
+
+.main {
+  min-width: 0;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+#viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  border: none;
+}
+
+#viewport canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hud {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 8px;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+#tooltip {
+  position: fixed;
+  z-index: 50;
+  max-width: 240px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  body { grid-template-columns: 1fr; }
+  .sidebar { max-height: 42vh; border-right: none; border-bottom: 1px solid var(--line); }
+  .main, #viewport { min-height: 58vh; }
+}

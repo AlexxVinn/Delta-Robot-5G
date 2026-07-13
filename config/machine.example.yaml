@@ -1,0 +1,56 @@
+# Example machine config — copy to machine.yaml and fill measured values.
+
+meta:
+  name: "delta-proto-1"
+  bom_version: "1.0"
+  protocol_version: 1
+
+frames:
+  z_down_tool: true
+  camera_to_base_mm: [0.0, 0.0, 0.0]
+  camera_to_base_rpy_rad: [0.0, 0.0, 0.0]
+
+geometry:
+  base_side_mm: 200.0
+  effector_side_mm: 60.0
+  upper_arm_mm: 120.0
+  forearm_mm: 280.0
+
+transmission:
+  ratio: 3.0
+  motor_steps_per_rev: 200
+  microsteps: 16
+  pulley_motor_teeth: 20
+
+joints:
+  count: 3
+  home_offset_rad: [0.0, 0.0, 0.0]
+  min_rad: [-1.2, -1.2, -1.2]
+  max_rad: [1.2, 1.2, 1.2]
+
+motors:
+  rated_current_ma: 2000
+  hold_current_ma: 800
+  inductance_mH: 1.6
+  holding_torque_nm: 0.45
+  rotor_inertia_kg_m2: 5.5e-6
+  supply_v: 48.0
+
+drivers:
+  type: "TMC5160"
+  sense_res_ohm: 0.05
+  stallguard_threshold: 8
+
+serial:
+  port: "/dev/ttyUSB0"
+  baud: 921600
+  stream_timeout_ms: 50
+  stream_rate_hz: 200
+
+workspace:
+  x_min_mm: -80.0
+  x_max_mm: 80.0
+  y_min_mm: -80.0
+  y_max_mm: 80.0
+  z_min_mm: 150.0
+  z_max_mm: 320.0

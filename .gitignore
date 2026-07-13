@@ -1,0 +1,53 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# PlatformIO / embedded
+firmware/.pio/
+firmware/.vscode/.browse.c_cpp.db*
+firmware/.vscode/c_cpp_properties.json
+firmware/.vscode/launch.json
+firmware/.vscode/ipch
+*.elf
+*.bin
+*.hex
+*.map
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Secrets / local machine config (never commit real calibrated machine)
+config/machine.yaml
+config/local.yaml
+*.local.yaml
+
+# CAD / large binaries (keep sources; ignore exports you regenerate)
+hardware/cad/**/*.tmp
+hardware/printable/**/*.gcode
+*.3mf.bak
+
+# Logs / media dumps
+*.log
+media/raw/
+host/.cache/
+
+# Python tooling
+uv.lock
+poetry.lock

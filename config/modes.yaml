@@ -1,0 +1,30 @@
+# Speed / Precise profiles for the host planner.
+
+modes:
+  speed:
+    id: 0
+    description: "catch / track"
+    max_vel_mm_s: 1500.0
+    max_accel_g: 3.0
+    max_jerk_mm_s3: 2.0e8
+    path_blend: true
+    settle_dwell_ms: 0
+    vision:
+      use_prediction: true
+      predict_horizon_ms: 40
+      confirm_before_place: false
+
+  precise:
+    id: 1
+    description: "place / settle"
+    max_vel_mm_s: 400.0
+    max_accel_g: 0.8
+    max_jerk_mm_s3: 2.0e7
+    path_blend: false
+    settle_dwell_ms: 40
+    vision:
+      use_prediction: false
+      predict_horizon_ms: 0
+      confirm_before_place: true
+
+default_mode: "precise"

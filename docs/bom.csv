@@ -1,0 +1,22 @@
+# Component,Description,Qty,Est_USD,Phase,Notes
+NEMA17 low-inductance stepper,"48mm, <=1.8mH, 2.0-2.5A, 1.8deg, dual-shaft",3,60,1,Same batch; see docs/BOM.md motor section
+TMC5160 HV SPI driver,HV carrier with heatsink,3,60,1,StallGuard for homing
+ESP32 DevKit V1,Step executor,1,6,1,
+48V PSU 350-400W,DC supply,1,32,1,
+DC bus cap + OV clamp,"4700uF/63V + TVS/MOSFET/brake resistor",1,10,1,Mandatory before high decel
+Driver cooling fan,40mm,1,3,1,
+Arducam OV9281 USB,Global shutter mono,1,50,1,
+Machine vision LED,DC/high-freq flicker-free,1,18,1,
+Host PC,Existing machine,0,0,1,Assumed available
+Carbon fiber tubes 6/4mm,Matched forearm rods,6,18,1,Match length <0.1mm
+N52 magnets,10-12mm countersunk,12,15,1,
+Chrome steel balls 10mm,Precision,12,10,1,
+Joint retention springs,Preload magnetic joints,1,5,1,Mandatory before high accel
+GT2 belt 9mm,5m fiber-reinforced,1,15,1,
+Motor pulleys 20T,9mm width 5mm bore,3,9,1,
+Arm sectors + idlers + bearings,3D printed + bearings,1,18,1,Sets reduction N
+Aluminum extrusion 2040,Pillars + base/top,9,50,1,Consider 3030 pillars
+Fastener kit,M5 T-nuts brackets,1,15,1,
+AS5047P encoder + magnet,SPI 14-bit,3,54,2,With FOC driver only
+TMC4671 FOC driver,Closed-loop servo,3,180,2,Phase-2 upgrade
+Vacuum pump + 3-way solenoid,Gripper,1,22,2,Keep pump off moving platform

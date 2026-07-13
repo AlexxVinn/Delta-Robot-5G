@@ -1,0 +1,24 @@
+# Hardware license: CERN-OHL-W v2
+
+All design materials under `hardware/` (CAD, drawings, printable sources,
+and related design documentation) are licensed under the
+
+**CERN Open Hardware Licence Version 2 — Weakly Reciprocal (CERN-OHL-W v2)**
+
+Full legal text:
+https://ohwr.org/project/cernohl/wikis/Documents/CERN-OHL-version-2
+
+SPDX: `CERN-OHL-W-2.0`
+
+## Notice (include with Covered Source)
+
+```
+Copyright 2026 Delta-Robot-5G contributors
+This source is licensed under the CERN-OHL-W v2
+https://ohwr.org/cern_ohl_w_v2.txt
+This source is distributed WITHOUT ANY EXPRESS OR IMPLIED WARRANTY.
+Source location: https://github.com/AlexxVinn/Delta-Robot-5G
+```
+
+Software under `firmware/`, `host/`, `protocol/`, and `scripts/` is MIT
+(see `LICENSE`). Documentation under `docs/` is CC-BY-4.0 (see `LICENSE-DOCS`).
