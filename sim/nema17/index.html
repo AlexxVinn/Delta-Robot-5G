@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NEMA 17 motor simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <h1>NEMA 17</h1>
+    <p class="sub">
+      Rough geometric + electrical/mechanical model of the Phase-1 target class:
+      low-inductance ~48&nbsp;mm body, dual shaft. Not a datasheet replacement —
+      shows why bus voltage and inductance dominate torque at speed.
+    </p>
+
+    <h2>Preset</h2>
+    <select id="preset">
+      <option value="bom" selected>BOM target (low-L ~1.6 mH, 2.0 A)</option>
+      <option value="generic">Generic 1.8° 1.5 A (~3.0 mH)</option>
+      <option value="hot">High-current 2.5 A (~1.4 mH)</option>
+    </select>
+
+    <h2>Electrical</h2>
+    <label>Bus voltage V <span class="val" id="v-v">48</span>
+      <input id="voltage" type="range" min="12" max="48" step="1" value="48" />
+    </label>
+    <label>Rated current A <span class="val" id="v-i">2.00</span>
+      <input id="current" type="range" min="0.8" max="2.8" step="0.05" value="2.0" />
+    </label>
+    <label>Phase resistance Ω <span class="val" id="v-r">1.20</span>
+      <input id="resistance" type="range" min="0.4" max="4.0" step="0.05" value="1.2" />
+    </label>
+    <label>Phase inductance mH <span class="val" id="v-l">1.60</span>
+      <input id="inductance" type="range" min="0.8" max="6.0" step="0.05" value="1.6" />
+    </label>
+
+    <h2>Mechanical</h2>
+    <label>Holding torque N·m <span class="val" id="v-th">0.45</span>
+      <input id="holdTorque" type="range" min="0.2" max="0.7" step="0.01" value="0.45" />
+    </label>
+    <label>Rotor inertia g·cm² <span class="val" id="v-j">54</span>
+      <input id="inertia" type="range" min="30" max="90" step="1" value="54" />
+    </label>
+    <label>Body length mm <span class="val" id="v-len">48</span>
+      <input id="bodyLen" type="range" min="34" max="60" step="1" value="48" />
+    </label>
+    <label>Microsteps <span class="val" id="v-ms">16</span>
+      <input id="microsteps" type="range" min="1" max="64" step="1" value="16" />
+    </label>
+
+    <h2>Operating point</h2>
+    <label>Speed rev/s <span class="val" id="v-spd">5.0</span>
+      <input id="speed" type="range" min="0" max="30" step="0.1" value="5" />
+    </label>
+
+    <div class="status" id="stats"></div>
+    <p class="sub" style="margin-top:1rem;margin-bottom:0">
+      Torque–speed uses a simple RL limited-current model:
+      I(ω) ≤ V / √(R²+(ωₑL)²), τ ∝ I. Good for comparing 24&nbsp;V vs 48&nbsp;V and low-L vs high-L — not for absolute pull-out claims.
+    </p>
+  </aside>
+
+  <main class="main">
+    <section class="panel view3d">
+      <header>NEMA 17 body — dual shaft (primitives)</header>
+      <div id="three"></div>
+    </section>
+    <section class="panel chart">
+      <header>Pull-out torque vs speed (approx.) — drag voltage to compare</header>
+      <canvas id="curve"></canvas>
+    </section>
+  </main>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

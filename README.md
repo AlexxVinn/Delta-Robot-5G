@@ -27,6 +27,7 @@ protocol/        host↔MCU message schema (shared contract)
 firmware/        ESP32 PlatformIO executor
 host/            Python: kinematics, vision, planner, serial link
 hardware/        CAD + printable parts
+sim/             browser kinematics + NEMA 17 rough simulators
 docs/            architecture, protocol, kinematics, safety, ADRs, BOM
 scripts/         analysis tools (dynamic model, …)
 ```
@@ -42,6 +43,7 @@ scripts/         analysis tools (dynamic model, …)
 | [`docs/safety.md`](docs/safety.md) | Non-negotiable electrical/mechanical rules |
 | [`docs/decisions/`](docs/decisions/) | Architecture Decision Records |
 | [`docs/build-log.md`](docs/build-log.md) | Dated engineering journal |
+| [`sim/`](sim/) | Browser kinematics + NEMA 17 rough simulators |
 
 ## Quick start (dev skeleton)
 
@@ -66,6 +68,11 @@ pio run
 ```bash
 python scripts/dynamic_model.py --help
 ```
+
+**Simulators** (no build — open in a browser)
+
+- [`sim/kinematics/index.html`](sim/kinematics/index.html) — delta IK/FK + workspace map
+- [`sim/nema17/index.html`](sim/nema17/index.html) — NEMA 17 body + torque/voltage model
 
 Copy `config/machine.example.yaml` → `config/machine.yaml` and fill real geometry (local `machine.yaml` is gitignored).
 
