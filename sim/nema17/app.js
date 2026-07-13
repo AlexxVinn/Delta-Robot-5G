@@ -275,6 +275,7 @@ function resize() {
 }
 
 function rebuildMotorMesh() {
+  if (!scene) return;
   if (motorGroup) scene.remove(motorGroup);
   motorGroup = buildNema17(+ui.bodyLen.value);
   scene.add(motorGroup);
@@ -450,7 +451,7 @@ function bind() {
 }
 
 bind();
-applyPreset("bom");
 initThree();
+applyPreset("bom");
 updateStats();
 drawCurve();
